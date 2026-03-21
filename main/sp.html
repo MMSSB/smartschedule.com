@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Exam Schedule</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://js.puter.com/v2/"></script>
+
+    <style>
+        /* ==================== VARIABLES & RESET ==================== */
+        :root {
+            --bg-color: #f8fafc;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+            --primary: #0f172a;
+            --primary-hover: #334155;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --font-main: 'Inter', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-main); background-color: var(--bg-color); color: var(--text-dark); -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        button { cursor: pointer; font-family: inherit; border: none; background: none; }
+        input, textarea, select { font-family: inherit; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* ==================== LANDING PAGE UI ==================== */
+        #landing-view {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #f8fafc;
+            /* Super Modern Mesh Gradient Background */
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(147, 51, 234, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 50% 90%, rgba(16, 185, 129, 0.15) 0px, transparent 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 0.6s ease, visibility 0.6s ease, transform 0.6s ease;
+        }
+
+        #landing-view.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(1.05);
+        }
+
+        .landing-content {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            animation: slideUp 0.8s var(--spring) forwards;
+        }
+
+        .hero-section h1 {
+            font-size: clamp(36px, 8vw, 56px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+        
+        .hero-section h1 span {
+            background: linear-gradient(135deg, #9333ea, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            font-size: clamp(16px, 4vw, 18px);
+            color: #64748b;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .landing-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: left;
+            display: none; /* Hidden initially */
+            animation: slideUp 0.5s var(--spring) forwards;
+        }
+
+        .landing-card h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .landing-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .btn-xl {
+            padding: 16px 32px;
+            font-size: 16px;
+            border-radius: 50px;
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-xl:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.3);
+        }
+
+        /* ==================== MAIN APP LAYOUT ==================== */
+        #app-view {
+            display: none; /* Hidden until setup is complete */
+            padding-bottom: 80px;
+            min-height: 100vh;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+        .top-bar { display: flex; justify-content: flex-end; gap: 10px; padding: 20px 0 10px; }
+        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 1px solid transparent; padding-bottom: 10px; }
+        .header h1 { font-size: clamp(24px, 5vw, 28px); font-weight: 800; letter-spacing: -0.5px; color: var(--text-dark); }
+        .header p { font-size: 14px; color: var(--text-muted); font-weight: 500; margin-top: 4px; }
+
+        /* ==================== BUTTONS & FORMS ==================== */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: var(--radius-lg); font-size: 14px; font-weight: 600; transition: var(--transition); }
+        .btn:active { transform: scale(0.96); }
+        .btn-outline { background: var(--surface); border: 1px solid var(--border); color: var(--text-dark); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: var(--shadow-sm); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-dark { background: var(--text-dark); color: white; }
+        .btn-dark:hover { background: #1e293b; }
+        .btn-purple { background: #9333ea; color: white; }
+        .btn-purple:hover { background: #7e22ce; }
+        
+        .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: var(--shadow-lg); z-index: 30; transition: var(--transition); display: none; }
+        .fab:active { transform: scale(0.9); }
+
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .form-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
+        .form-input { width: 100%; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 15px; color: var(--text-dark); transition: var(--transition); }
+        .form-input:focus { background: var(--surface); border-color: #3b82f6; outline: 3px solid rgba(59, 130, 246, 0.15); }
+        textarea.form-input { height: 120px; resize: none; }
+
+        /* ==================== CARDS ==================== */
+        .schedule-list { display: flex; flex-direction: column; gap: 16px; }
+        .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; position: relative; display: flex; flex-direction: column; gap: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition); animation: slideUp 0.5s var(--spring) forwards; opacity: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .exam-card.removing { animation: fadeOut 0.3s ease forwards; }
+        @keyframes fadeOut { to { opacity: 0; transform: scale(0.95); height: 0; padding: 0; margin: 0; border: none; } }
+        
+        .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+        .card-delete { position: absolute; top: 16px; right: 16px; color: #cbd5e1; background: none; border: none; padding: 8px; border-radius: 50%; font-size: 16px; transition: var(--transition); opacity: 1; z-index: 10; width: 35px; }
+        .card-delete:hover { color: #ef4444; background: #fef2f2; }
+        
+        .card-left { display: flex; flex-direction: column; justify-content: center; }
+        .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 6px; }
+        .course-code { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid; text-transform: uppercase; width: fit-content; }
+        .course-name { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-top: 10px; line-height: 1.3; }
+        
+        .card-right { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+        .info-block { display: flex; gap: 12px; align-items: flex-start; flex: 1; }
+        .info-icon { background: #f8fafc; border: 1px solid var(--border); width: 32px; height: 32px; border-radius: var(--radius-md); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .info-text strong { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 2px; }
+        .info-text span { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+
+        .empty-state { display: none; flex-direction: column; align-items: center; text-align: center; padding: 60px 20px; }
+        .empty-icon { font-size: 40px; color: var(--text-light); background: #f1f5f9; padding: 24px; border-radius: 50%; margin-bottom: 16px; width: 100px; }
+        .empty-state h3 { font-size: 18px; color: var(--text-dark); margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; color: var(--text-muted); max-width: 300px; }
+
+        /* ==================== MODALS ==================== */
+        .modal-wrapper { position: fixed; inset: 0; z-index: 50; pointer-events: none; display: flex; justify-content: center; align-items: flex-end; }
+        .modal-wrapper.active { pointer-events: auto; }
+        .modal-overlay { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); opacity: 0; transition: opacity 0.4s ease; }
+        .modal-wrapper.active .modal-overlay { opacity: 1; }
+        
+        .modal-content { background: var(--surface); width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; position: relative; z-index: 51; border-radius: 24px 24px 0 0; transform: translateY(100%); transition: transform 0.5s var(--spring); box-shadow: var(--shadow-xl); }
+        .modal-wrapper.active .modal-content { transform: translateY(0); }
+        
+        .modal-drag { width: 48px; height: 5px; background: #e2e8f0; border-radius: 10px; margin: 12px auto 0; display: block; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        .modal-close { background: none; border: none; font-size: 20px; color: var(--text-light); padding: 4px; transition: color 0.2s; }
+        .modal-close:hover { color: var(--text-dark); }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+
+        .color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
+        .color-radio { display: none; }
+        .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent; }
+        .color-radio:checked + .color-swatch { transform: scale(1.1); box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text-dark); }
+        
+        .modal-actions { display: flex; gap: 10px; padding-top: 20px; border-top: 1px solid var(--border); margin-top: 10px; }
+        .modal-actions .btn { flex: 1; }
+
+        /* ==================== ANIMATED TABS ==================== */
+        .tabs { position: relative; display: flex; background: #f1f5f9; padding: 4px; border-radius: var(--radius-md); width: 100%; max-width: 250px; z-index: 1; }
+        .tab-btn { flex: 1; position: relative; z-index: 2; padding: 6px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; color: var(--text-muted); transition: color 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; }
+        .tab-btn.active { color: var(--text-dark); }
+        .tab-indicator { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: var(--surface); border-radius: 6px; box-shadow: var(--shadow-sm); transition: transform 0.4s var(--spring); z-index: 1; }
+        .tabs[data-active="1"] .tab-indicator { transform: translateX(0); }
+        .tabs[data-active="2"] .tab-indicator { transform: translateX(100%); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: tabFadeSlide 0.4s var(--spring) forwards; }
+        @keyframes tabFadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ==================== EXPORT PREVIEW UI ==================== */
+        .export-layout-preview { display: flex; justify-content: center; align-items: center; background: #f1f5f9; border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); height: 140px; }
+        .schematic-box { background: white; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: var(--shadow-sm); transition: all 0.4s var(--spring); display: flex; flex-direction: column; padding: 6px; gap: 4px; }
+        .schematic-header { height: 8px; background: #e2e8f0; border-radius: 2px; width: 60%; margin-bottom: 4px; }
+        .schematic-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 2px; flex: 1; display: flex; }
+        
+        .schematic-box.desktop { width: 120px; height: 80px; }
+        .schematic-box.desktop .schematic-card { flex-direction: row; align-items: center; padding: 4px; gap: 8px; }
+        .schematic-box.desktop .schematic-card::before { content: ''; width: 30%; height: 6px; background: #cbd5e1; border-radius: 1px; }
+        .schematic-box.desktop .schematic-card::after { content: ''; width: 40%; height: 6px; background: #cbd5e1; border-radius: 1px; }
+        
+        .schematic-box.a4 { width: 90px; height: 110px; }
+        .schematic-box.a4 .schematic-card { flex-direction: row; align-items: center; padding: 4px; gap: 8px; }
+        .schematic-box.a4 .schematic-card::before { content: ''; width: 30%; height: 6px; background: #cbd5e1; border-radius: 1px; }
+        .schematic-box.a4 .schematic-card::after { content: ''; width: 40%; height: 6px; background: #cbd5e1; border-radius: 1px; }
+
+        .schematic-box.mobile { width: 60px; height: 110px; }
+        .schematic-box.mobile .schematic-card { flex-direction: column; justify-content: space-between; padding: 4px; gap: 4px; }
+        .schematic-box.mobile .schematic-card::before { content: ''; width: 80%; height: 6px; background: #cbd5e1; border-radius: 1px; }
+        .schematic-box.mobile .schematic-card::after { content: ''; width: 100%; height: 6px; background: #cbd5e1; border-radius: 1px; }
+
+        .export-option-card { border: 2px solid var(--border); border-radius: var(--radius-lg); padding: 12px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .export-option-card:hover { border-color: #cbd5e1; }
+        .export-option-card.active { border-color: var(--primary); background: #eff6ff; }
+        .export-option-card i { font-size: 24px; color: var(--text-muted); }
+        .export-option-card.active i { color: var(--primary); }
+        .export-option-info h4 { font-size: 14px; color: var(--text-dark); font-weight: 600; }
+        .export-option-info p { font-size: 11px; color: var(--text-muted); }
+
+        /* Loader & Toast */
+        .loader-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.9); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .loader-overlay.active { display: flex; }
+        .spinner { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin-bottom: 12px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -20px); opacity: 0; background: var(--text-dark); color: white; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-lg); z-index: 100; transition: all 0.4s var(--spring); pointer-events: none; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+        /* Print only area */
+        .print-footer { display: none; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; }
+        .print-footer p { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .print-footer span { font-size: 12px; color: var(--text-light); display: block; margin-top: 4px; }
+
+        /* ==================== RESPONSIVE RULES ==================== */
+        @media (min-width: 640px) {
+            .fab { display: none; }
+            .header-actions .btn-primary { display: inline-flex; }
+            
+            .exam-card { flex-direction: row; align-items: center; padding: 24px; }
+            .card-left { width: 40%; padding-right: 20px; }
+            .card-right { width: 60%; flex-direction: row; border-top: none; border-left: 1px solid var(--border); padding-top: 0; padding-left: 20px; }
+            .card-delete { opacity: 0; }
+            .exam-card:hover .card-delete { opacity: 1; }
+            
+            /* Desktop Modal Animation */
+            .modal-wrapper { align-items: center; }
+            .modal-content { border-radius: 16px; transform: scale(0.95) translateY(10px); opacity: 0; transition: transform 0.4s var(--spring), opacity 0.4s ease; }
+            .modal-wrapper.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+            .modal-drag { display: none; }
+        }
+        @media (max-width: 639px) {
+            .header-actions .btn-primary { display: none; }
+            .fab { display: flex; }
+            .desktop-only { display: none; }
+        }
+
+        /* VIRTUAL RENDER CONTAINER (FOR PERFECT IMAGE EXPORT) */
+        #virtual-export-container {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            background: #f8fafc;
+            padding: 40px;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="landing-view">
+        <div class="landing-content">
+            
+            <div id="hero-section" class="hero-section">
+                <div style="font-size: 48px; color: #9333ea; margin-bottom: 24px;">
+                    <i class="ph-duotone ph-calendar-check"></i>
+                </div>
+                <h1>Plan your exams.<br><span>Smarter.</span></h1>
+                <p>Drop your syllabus text, let AI organize your dates, and export beautifully responsive PDFs in seconds.</p>
+                <button onclick="showSetupWizard()" class="btn btn-primary btn-xl">
+                    Get Started <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </div>
+
+            <div id="setup-section" class="landing-card">
+                <h2>Welcome aboard! 👋</h2>
+                <p>Let's personalize your schedule space before we start.</p>
+                
+                <form onsubmit="finishSetup(event)">
+                    <div class="form-group">
+                        <label class="form-label">University / Institution</label>
+                        <input type="text" id="wizardUniversity" class="form-input" required placeholder="e.g. MUST University" autocomplete="off">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Schedule Title</label>
+                            <input type="text" id="wizardTitle" class="form-input" required placeholder="e.g. Midterms" value="My Schedule" autocomplete="off">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label class="form-label">Date / Term</label>
+                            <input type="text" id="wizardSubtitle" class="form-input" required placeholder="e.g. Spring 2026" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; margin-top: 10px; font-size: 15px;">
+                        Create My Schedule <i class="ri-rocket-line"></i>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="app-view">
+        <div class="container">
+            <div class="top-bar">
+                <button onclick="openSettingsModal()" class="btn btn-outline" style="margin-right: auto;">
+                    <i class="ph-bold ph-gear"></i>
+                    <span class="desktop-only">Settings</span>
+                </button>
+                <button onclick="openExportModal()" class="btn btn-dark">
+                    <i class="fa-solid fa-file-export"></i>
+                    <span class="desktop-only">Export Schedule</span>
+                </button>
+            </div>
+
+            <main id="schedule-container">
+                <header class="header">
+                    <div>
+                        <h1 id="display-title">My Schedule</h1>
+                        <p id="display-subtitle"></p>
+                    </div>
+                    <div class="header-actions">
+                        <button onclick="openAddModal()" class="btn btn-primary">
+                            <i class="ph-bold ph-plus"></i> Add Exam
+                        </button>
+                    </div>
+                </header>
+
+                <div id="schedule-list" class="schedule-list">
+                    </div>
+
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon"><i class="ph-duotone ph-calendar-blank"></i></div>
+                    <h3>Your schedule is empty</h3>
+                    <p>Add an exam manually or let AI extract it from your syllabus!</p>
+                    <button onclick="openAddModal()" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="ph-bold ph-plus"></i> Add First Exam
+                    </button>
+                </div>
+                
+                <div class="print-footer print-only">
+                    <p id="display-university">MUST UNIVERSITY</p>
+                    <span>Generated on <span id="current-date"></span></span>
+                </div>
+            </main>
+        </div>
+
+        <button class="fab" onclick="openAddModal()">
+            <i class="ph-bold ph-plus"></i>
+        </button>
+
+        <div id="settingsModal" class="modal-wrapper">
+            <div class="modal-overlay" onclick="closeSettingsModal()"></div>
+            <div class="modal-content">
+                <div class="modal-drag"></div>
+                <div class="modal-header">
+                    <div class="tabs" id="settingsTabsContainer" data-active="1">
+                        <div class="tab-indicator"></div>
+                        <button id="tabBtnGeneral" class="tab-btn active" onclick="switchSettingsTab('general')">General</button>
+                        <button id="tabBtnAbout" class="tab-btn" onclick="switchSettingsTab('about')">About</button>
+                    </div>
+                    <button class="modal-close" onclick="closeSettingsModal()"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <div class="modal-body">
+                    <form id="formSettings" class="tab-content active" onsubmit="handleSettingsSubmit(event)">
+                        <div class="form-group">
+                            <label class="form-label">Schedule Title</label>
+                            <input type="text" id="settingTitle" class="form-input" required placeholder="e.g. Midterm Exams">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Term / Date Subtitle</label>
+                            <input type="text" id="settingSubtitle" class="form-input" required placeholder="e.g. Spring 2026">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">University / Institution Name</label>
+                            <input type="text" id="settingUniversity" class="form-input" required placeholder="e.g. MUST University">
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeSettingsModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+
+                    <!-- <div id="aboutSection" class="tab-content">
+                        <div style="text-align: center; padding: 20px 0;">
+                            <div style="width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
+                                <i class="ph-bold ph-calendar-check"></i>
+                            </div>
+                            <h3 style="font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Smart Schedule App</h3>
+                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Version 3.0</p>
+                            
+                            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left;">
+                                <p style="font-size: 13px; color: var(--text-dark); line-height: 1.6; margin-bottom: 12px;">
+                                    A beautifully designed, fully responsive application to manage and export your exam schedules.
+                                </p>
+                                <ul style="font-size: 13px; color: var(--text-muted); padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                                    <li>Smart AI parsing via Puter.js</li>
+                                    <li>Selectable-text PDF generation</li>
+                                    <li>Pixel-perfect responsive image exports</li>
+                                    <li>Fluid animations & interactions</li>
+                                </ul>
+                                <br>
+                                <h6>This App Made By MMS</h4>
+                                    
+                            </div>
+                        </div> -->
+                        <div id="aboutSection" class="tab-content">
+    <div style="text-align: center; padding: 20px 0;">
+        <div style="width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
+            <i class="ph-bold ph-calendar-check"></i>
+        </div>
+        <h3 style="font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Smart Schedule App</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Version 3.0</p>
+                                    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                                <p style="font-size: 13px; color: var(--text-dark); line-height: 1.6; margin-bottom: 12px;">
+                                    A beautifully designed, fully responsive application to manage and export your exam schedules.
+                                </p>
+                                <ul style="font-size: 13px; color: var(--text-muted); padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                                    <li>Smart AI parsing via Puter.js</li>
+                                    <li>Selectable-text PDF generation</li>
+                                    <li>Pixel-perfect responsive image exports</li>
+                                    <li>Fluid animations & interactions</li>
+                                </ul>
+                                <br>
+                                <div style="justify-items: center;">
+<a href="https://mmssb.github.io" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 50px; margin-bottom: 24px; text-decoration: none; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+<!-- <a href="https://github.com/MMSSB" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 50px; margin-bottom: 24px; text-decoration: none; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"> -->
+            <span style="font-size: 12px; font-weight: 600; color: #64748b;">Made by</span>
+            <span style="font-size: 13px; font-weight: 800; color: #9333ea;">MMS</span>
+            <i class="ph-fill ph-sparkle" style="color: #9333ea; font-size: 14px;"></i>
+        </a>
+        </div>
+        <a href="updates.html" class="btn btn-outline" style="width: 100%; justify-content: center;">View Full Changelog</a>
+    </div>
+</div>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+
+        <div id="addModal" class="modal-wrapper">
+            <div class="modal-overlay" onclick="closeAddModal()"></div>
+            <div class="modal-content">
+                <div class="modal-drag"></div>
+                <div class="modal-header">
+                    <div class="tabs" id="addTabsContainer" data-active="1">
+                        <div class="tab-indicator"></div>
+                        <button id="tabBtnManual" class="tab-btn active" onclick="switchAddTab('manual')">Manual</button>
+                        <button id="tabBtnAI" class="tab-btn" onclick="switchAddTab('ai')">
+                            <i class="ri-magic-line" style="color: #9333ea;"></i> AI
+                        </button>
+                    </div>
+                    <button class="modal-close" onclick="closeAddModal()"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div id="aiLoader" class="loader-overlay">
+                        <div class="spinner"></div>
+                        <p style="font-size: 13px; font-weight: 600; color: #0f172a;">Extracting Exams...</p>
+                    </div>
+
+                    <form id="formManual" class="tab-content active" onsubmit="handleManualSubmit(event)">
+                        <div class="form-row">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Course Code</label>
+                                <input type="text" id="courseCode" class="form-input" required placeholder="">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Date</label>
+                                <input type="date" id="examDate" class="form-input" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Course Name</label>
+                            <input type="text" id="courseName" class="form-input" required placeholder="">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" id="examTimeStart" class="form-input" required>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">End Time</label>
+                                <input type="time" id="examTimeEnd" class="form-input" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Card Color</label>
+                            <div class="color-picker" id="colorPicker"></div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Exam</button>
+                        </div>
+                    </form>
+
+                    <form id="formAI" class="tab-content" onsubmit="handleAISubmit(event)">
+                        <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; gap: 10px;">
+                            <i class="ri-sparkling-line" style="color: #9333ea; font-size: 18px; margin-top:2px;"></i>
+                            <p style="font-size: 12px; color: #6b21a8; line-height: 1.4;">Paste your raw text (like a syllabus). AI will extract all dates and times automatically.</p>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="aiPrompt" class="form-input" required placeholder="E.g. I have Math 101 on April 12th from 2pm to 4pm..."></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+                            <button type="submit" class="btn btn-purple"><i class="ri-magic-line"></i> Extract</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="exportModal" class="modal-wrapper">
+            <div class="modal-overlay" onclick="closeExportModal()"></div>
+            <div class="modal-content">
+                <div class="modal-drag"></div>
+                <div class="modal-header">
+                    <h2 style="font-size: 18px; font-weight: 700;">Export Options</h2>
+                    <button class="modal-close" onclick="closeExportModal()"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="export-layout-preview">
+                        <div id="schematic-preview" class="schematic-box desktop">
+                            <div class="schematic-header"></div>
+                            <div class="schematic-card"></div>
+                            <div class="schematic-card"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Select Layout Format</label>
+                        <div class="export-option-card active" onclick="selectExportSize('desktop', this)">
+                            <i class="ph-duotone ph-monitor"></i>
+                            <div class="export-option-info">
+                                <h4>Desktop / Default</h4>
+                                <p>Horizontal wide cards</p>
+                            </div>
+                        </div>
+                        <div class="export-option-card" onclick="selectExportSize('a4', this)">
+                            <i class="ph-duotone ph-file-text"></i>
+                            <div class="export-option-info">
+                                <h4>A4 Document</h4>
+                                <p>Standard printable format</p>
+                            </div>
+                        </div>
+                        <div class="export-option-card" onclick="selectExportSize('mobile', this)">
+                            <i class="ph-duotone ph-device-mobile"></i>
+                            <div class="export-option-info">
+                                <h4>Mobile View</h4>
+                                <p>Compact vertical stacked cards</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="exportAsImage()"><i class="ph-bold ph-image"></i> Save Image</button>
+                        <button type="button" class="btn btn-primary" onclick="exportAsPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <div id="virtual-export-container"></div>
+
+    <div id="toast" class="toast">
+        <i id="toast-icon" class="ph-fill ph-check-circle" style="color: #4ade80; font-size: 18px;"></i>
+        <span id="toast-message">Action successful</span>
+    </div>
+
+    <script>
+        // Core Configurations
+        const themes = {
+            blue:   { hex: '#3b82f6', bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
+            indigo: { hex: '#6366f1', bg: '#e0e7ff', text: '#4338ca', border: '#c7d2fe' },
+            emerald:{ hex: '#10b981', bg: '#d1fae5', text: '#047857', border: '#a7f3d0' },
+            orange: { hex: '#f97316', bg: '#ffedd5', text: '#c2410c', border: '#fed7aa' },
+            purple: { hex: '#a855f7', bg: '#faf5ff', text: '#7e22ce', border: '#e9d5ff' },
+            rose:   { hex: '#f43f5e', bg: '#ffe4e6', text: '#be123c', border: '#fecdd3' }
+        };
+
+        // State Management
+        let exams = JSON.parse(localStorage.getItem('exams')) || [];
+        let appSettings = JSON.parse(localStorage.getItem('appSettings')) || {
+            initialized: false, // NEW: tracks if they finished the welcome wizard
+            title: "My Schedule",
+            subtitle: "",
+            university: ""
+        };
+
+        let currentExportSize = 'desktop';
+
+        // Helpers
+        const formatDate = (dateString) => {
+            const date = new Date(dateString + 'T00:00:00'); 
+            return date.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+        };
+        const formatTime = (timeString) => {
+            let [hours, minutes] = timeString.split(':');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; 
+            return `${hours}:${minutes} ${ampm}`;
+        };
+
+        // --- INITIALIZATION ROUTING ---
+        function initApp() {
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
+            // Check if user has already completed setup
+            if (appSettings.initialized) {
+                // Skip landing page, go straight to app
+                document.getElementById('landing-view').style.display = 'none';
+                document.getElementById('app-view').style.display = 'block';
+                loadMainAppFeatures();
+            } else {
+                // Show Landing Page
+                document.getElementById('landing-view').classList.remove('hidden');
+            }
+        }
+
+        // --- LANDING PAGE WIZARD LOGIC ---
+        function showSetupWizard() {
+            document.getElementById('hero-section').style.display = 'none';
+            document.getElementById('setup-section').style.display = 'block';
+        }
+
+        function finishSetup(e) {
+            e.preventDefault();
+            appSettings.university = document.getElementById('wizardUniversity').value.trim();
+            appSettings.title = document.getElementById('wizardTitle').value.trim() || 'My Schedule';
+            appSettings.subtitle = document.getElementById('wizardSubtitle').value.trim();
+            appSettings.initialized = true;
+
+            // Save and transition
+            localStorage.setItem('appSettings', JSON.stringify(appSettings));
+            
+            const landing = document.getElementById('landing-view');
+            landing.classList.add('hidden');
+            
+            setTimeout(() => {
+                landing.style.display = 'none';
+                document.getElementById('app-view').style.display = 'block';
+                loadMainAppFeatures();
+                showToast("Welcome to your dashboard!");
+            }, 500);
+        }
+
+        // --- MAIN APP LOGIC ---
+        function loadMainAppFeatures() {
+            // Color picker setup
+            const picker = document.getElementById('colorPicker');
+            picker.innerHTML = '';
+            Object.keys(themes).forEach((color, index) => {
+                const label = document.createElement('label');
+                label.className = 'cursor-pointer relative flex items-center justify-center';
+                label.innerHTML = `
+                    <input type="radio" name="themeColor" value="${color}" class="color-radio" ${index === 0 ? 'checked' : ''}>
+                    <div class="color-swatch" style="background-color: ${themes[color].hex};"></div>
+                `;
+                picker.appendChild(label);
+            });
+
+            applySettings();
+            renderExams();
+        }
+
+        function applySettings() {
+            document.getElementById('display-title').textContent = appSettings.title;
+            document.getElementById('display-subtitle').textContent = appSettings.subtitle;
+            document.getElementById('display-university').textContent = appSettings.university.toUpperCase();
+            
+            document.getElementById('settingTitle').value = appSettings.title;
+            document.getElementById('settingSubtitle').value = appSettings.subtitle;
+            document.getElementById('settingUniversity').value = appSettings.university;
+        }
+
+        // Settings Modal
+        const settingsModal = document.getElementById('settingsModal');
+        function openSettingsModal() { settingsModal.classList.add('active'); }
+        function closeSettingsModal() { 
+            settingsModal.classList.remove('active'); 
+            setTimeout(() => switchSettingsTab('general'), 400);
+        }
+
+        function switchSettingsTab(tab) {
+            const container = document.getElementById('settingsTabsContainer');
+            const general = document.getElementById('formSettings');
+            const about = document.getElementById('aboutSection');
+            const btnGeneral = document.getElementById('tabBtnGeneral');
+            const btnAbout = document.getElementById('tabBtnAbout');
+
+            if (tab === 'general') {
+                container.setAttribute('data-active', '1');
+                general.classList.add('active'); about.classList.remove('active');
+                btnGeneral.classList.add('active'); btnAbout.classList.remove('active');
+            } else {
+                container.setAttribute('data-active', '2');
+                about.classList.add('active'); general.classList.remove('active');
+                btnAbout.classList.add('active'); btnGeneral.classList.remove('active');
+            }
+        }
+
+        function handleSettingsSubmit(e) {
+            e.preventDefault();
+            appSettings.title = document.getElementById('settingTitle').value.trim() || 'My Schedule';
+            appSettings.subtitle = document.getElementById('settingSubtitle').value.trim();
+            appSettings.university = document.getElementById('settingUniversity').value.trim();
+            
+            localStorage.setItem('appSettings', JSON.stringify(appSettings));
+            applySettings();
+            closeSettingsModal();
+            showToast("Settings saved successfully!");
+        }
+
+        function renderExams() {
+            const list = document.getElementById('schedule-list');
+            const emptyState = document.getElementById('empty-state');
+            list.innerHTML = '';
+            
+            if (exams.length === 0) {
+                emptyState.style.display = 'flex';
+                return;
+            }
+            emptyState.style.display = 'none';
+
+            const sortedExams = [...exams].sort((a, b) => new Date(`${a.date}T${a.timeStart}`) - new Date(`${b.date}T${b.timeStart}`));
+
+            sortedExams.forEach((exam, index) => {
+                const theme = themes[exam.color] || themes.blue;
+                const card = document.createElement('div');
+                card.id = `exam-${exam.id}`;
+                card.className = `exam-card`;
+                card.style.animationDelay = `${index * 0.05}s`;
+                
+                card.innerHTML = `
+                    <div class="card-accent" style="background-color: ${theme.hex};"></div>
+                    <button onclick="deleteExam('${exam.id}')" class="card-delete">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <div class="card-left">
+                        <span class="card-label">Course</span>
+                        <div class="course-code" style="background: ${theme.bg}; color: ${theme.text}; border-color: ${theme.border};">${exam.code}</div>
+                        <h3 class="course-name">${exam.name}</h3>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-block">
+                            <div class="info-icon"><i class="ph-duotone ph-calendar"></i></div>
+                            <div class="info-text">
+                                <strong>Date</strong>
+                                <span>${formatDate(exam.date)}</span>
+                            </div>
+                        </div>
+                        <div class="info-block">
+                            <div class="info-icon"><i class="ph-duotone ph-clock"></i></div>
+                            <div class="info-text">
+                                <strong>Time</strong>
+                                <span>${formatTime(exam.timeStart)} - ${formatTime(exam.timeEnd)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function deleteExam(id) {
+            const card = document.getElementById(`exam-${id}`);
+            if (card) {
+                card.classList.add('removing');
+                setTimeout(() => {
+                    exams = exams.filter(e => e.id !== id);
+                    localStorage.setItem('exams', JSON.stringify(exams));
+                    renderExams();
+                    showToast("Exam removed");
+                }, 300);
+            }
+        }
+
+        // Add Modal Logic
+        const addModal = document.getElementById('addModal');
+        function openAddModal() { 
+            addModal.classList.add('active'); 
+            const dateInput = document.getElementById('examDate');
+            if(!dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        function closeAddModal() { 
+            addModal.classList.remove('active'); 
+            setTimeout(() => {
+                document.getElementById('formManual').reset();
+                document.getElementById('formAI').reset();
+                switchAddTab('manual');
+            }, 400);
+        }
+
+        function switchAddTab(tab) {
+            const container = document.getElementById('addTabsContainer');
+            const manual = document.getElementById('formManual');
+            const ai = document.getElementById('formAI');
+            const btnManual = document.getElementById('tabBtnManual');
+            const btnAI = document.getElementById('tabBtnAI');
+
+            if (tab === 'manual') {
+                container.setAttribute('data-active', '1');
+                manual.classList.add('active'); ai.classList.remove('active');
+                btnManual.classList.add('active'); btnAI.classList.remove('active');
+            } else {
+                container.setAttribute('data-active', '2');
+                ai.classList.add('active'); manual.classList.remove('active');
+                btnAI.classList.add('active'); btnManual.classList.remove('active');
+            }
+        }
+
+        function handleManualSubmit(e) {
+            e.preventDefault();
+            const colorOption = document.querySelector('input[name="themeColor"]:checked');
+            const newExam = {
+                id: Date.now().toString(),
+                code: document.getElementById('courseCode').value.trim(),
+                name: document.getElementById('courseName').value.trim(),
+                date: document.getElementById('examDate').value,
+                timeStart: document.getElementById('examTimeStart').value,
+                timeEnd: document.getElementById('examTimeEnd').value,
+                color: colorOption ? colorOption.value : 'blue'
+            };
+            exams.push(newExam);
+            localStorage.setItem('exams', JSON.stringify(exams));
+            renderExams();
+            closeAddModal();
+            showToast("Exam added successfully!");
+        }
+
+        // Puter AI Extraction
+        async function handleAISubmit(e) {
+            e.preventDefault();
+            const promptText = document.getElementById('aiPrompt').value.trim();
+            if(!promptText) return;
+
+            const loader = document.getElementById('aiLoader');
+            loader.classList.add('active');
+
+            try {
+                const currentYear = new Date().getFullYear();
+                const systemPrompt = `Extract exams from the following text. The current year is ${currentYear} if not specified.
+        You MUST respond ONLY with a raw JSON array of objects. Do not include any markdown formatting like \`\`\`json. 
+        Each object must have EXACTLY these properties:
+        - code (string, e.g., "MATH 101")
+        - name (string, course name)
+        - date (string, format YYYY-MM-DD)
+        - timeStart (string, format HH:MM in 24hr)
+        - timeEnd (string, format HH:MM in 24hr)
+        - color (string, randomly pick one: "blue", "indigo", "emerald", "orange", "purple", "rose")
+
+        Text to extract from:
+        ${promptText}`;
+
+                const response = await puter.ai.chat(systemPrompt);
+                
+                let rawText = "";
+                if (typeof response === 'string') {
+                    rawText = response;
+                } else if (response?.message?.content) {
+                    rawText = response.message.content; 
+                } else if (response?.text) {
+                    rawText = response.text; 
+                } else {
+                    rawText = JSON.stringify(response); 
+                }
+                
+                let cleanJsonText = rawText.trim();
+                
+                if (cleanJsonText.startsWith('```json')) {
+                    cleanJsonText = cleanJsonText.replace(/^```json/, '').replace(/```$/, '').trim();
+                } else if (cleanJsonText.startsWith('```')) {
+                    cleanJsonText = cleanJsonText.replace(/^```/, '').replace(/```$/, '').trim();
+                }
+
+                const extractedData = JSON.parse(cleanJsonText);
+
+                if (Array.isArray(extractedData) && extractedData.length > 0) {
+                    extractedData.forEach(ex => { 
+                        ex.id = Date.now().toString() + Math.random().toString(36).substr(2, 5); 
+                        exams.push(ex); 
+                    });
+                    localStorage.setItem('exams', JSON.stringify(exams));
+                    renderExams();
+                    closeAddModal();
+                    showToast(`Added ${extractedData.length} exams!`);
+                } else {
+                    showToast("No exams found.", true);
+                }
+            } catch(err) {
+                console.error("AI Extraction Error:", err);
+                showToast("Failed to connect to AI or parse response.", true);
+            } finally {
+                loader.classList.remove('active');
+            }
+        }
+
+        // Export Modal & UI State
+        const exportModal = document.getElementById('exportModal');
+        function openExportModal() { exportModal.classList.add('active'); }
+        function closeExportModal() { exportModal.classList.remove('active'); }
+
+        function selectExportSize(size, el) {
+            currentExportSize = size;
+            document.querySelectorAll('.export-option-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            
+            const schematic = document.getElementById('schematic-preview');
+            schematic.className = `schematic-box ${size}`;
+        }
+
+        // --- IMAGE EXPORT ---
+        async function exportAsImage() {
+            try {
+                const virtualContainer = document.getElementById('virtual-export-container');
+                virtualContainer.innerHTML = '';
+                
+                let exportWidth;
+                if(currentExportSize === 'desktop') exportWidth = 1024;
+                else if(currentExportSize === 'a4') exportWidth = 794;
+                else exportWidth = 428; 
+
+                virtualContainer.style.width = `${exportWidth}px`;
+                
+                let htmlStr = `
+                    <div style="font-family: 'Inter', sans-serif;">
+                        <h1 style="font-size: 32px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">${appSettings.title}</h1>
+                        <p style="font-size: 16px; color: #64748b; font-weight: 500; margin-bottom: 40px;">${appSettings.subtitle}</p>
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                `;
+
+                const sortedExams = [...exams].sort((a, b) => new Date(`${a.date}T${a.timeStart}`) - new Date(`${b.date}T${b.timeStart}`));
+
+                sortedExams.forEach(exam => {
+                    const theme = themes[exam.color] || themes.blue;
+                    const isMobile = currentExportSize === 'mobile';
+                    const cardFlex = isMobile ? 'column' : 'row';
+                    const leftWidth = isMobile ? '100%' : '40%';
+                    const rightWidth = isMobile ? '100%' : '60%';
+                    const rightBorder = isMobile ? 'border-top: 1px solid #e2e8f0; padding-top: 16px;' : 'border-left: 1px solid #e2e8f0; padding-left: 24px;';
+                    const itemLayout = isMobile ? 'column' : 'row';
+
+                    htmlStr += `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; position: relative; display: flex; flex-direction: ${cardFlex}; gap: 20px; align-items: ${isMobile ? 'stretch' : 'center'};">
+                            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background-color: ${theme.hex}; border-radius: 16px 0 0 16px;"></div>
+                            
+                            <div style="width: ${leftWidth}; display: flex; flex-direction: column;">
+                                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px;">Course</span>
+                                <div style="padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; border: 1px solid ${theme.border}; background: ${theme.bg}; color: ${theme.text}; width: fit-content; text-transform: uppercase;">${exam.code}</div>
+                                <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-top: 12px; line-height: 1.3;">${exam.name}</h3>
+                            </div>
+                            
+                            <div style="width: ${rightWidth}; display: flex; flex-direction: ${itemLayout}; gap: 20px; ${rightBorder}">
+                                <div style="display: flex; gap: 12px; flex: 1; align-items: flex-start;">
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; width: 36px; height: 36px; border-radius: 8px; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                        <i class="ph-duotone ph-calendar"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="display: block; font-size: 11px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px;">Date</strong>
+                                        <span style="font-size: 15px; font-weight: 600; color: #0f172a;">${formatDate(exam.date)}</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 12px; flex: 1; align-items: flex-start;">
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; width: 36px; height: 36px; border-radius: 8px; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                        <i class="ph-duotone ph-clock"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="display: block; font-size: 11px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px;">Time</strong>
+                                        <span style="font-size: 15px; font-weight: 600; color: #0f172a;">${formatTime(exam.timeStart)} - ${formatTime(exam.timeEnd)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                htmlStr += `
+                        </div>
+                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center;">
+                            <p style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">${appSettings.university.toUpperCase()}</p>
+                            <span style="font-size: 12px; color: #94a3b8; display: block; margin-top: 4px;">Generated on ${new Date().toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `;
+
+                virtualContainer.innerHTML = htmlStr;
+
+                const canvas = await html2canvas(virtualContainer, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#f8fafc',
+                    windowWidth: exportWidth
+                });
+
+                const link = document.createElement('a');
+                link.download = `${appSettings.title.replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL("image/png", 1.0);
+                link.click();
+                showToast("Saved as Image!");
+            } catch (error) { 
+                console.error(error);
+                showToast("Failed to export image", true); 
+            }
+        }
+
+        // --- PDF EXPORT ---
+        async function exportAsPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                
+                let format = 'a4';
+                let orientation = 'p';
+                let pageWidth = 210;
+                let pageHeight = 297;
+
+                if (currentExportSize === 'mobile') {
+                    format = [110, 240]; 
+                    pageWidth = 110;
+                    pageHeight = 240;
+                } else if (currentExportSize === 'desktop') {
+                    format = [270, 190];
+                    orientation = 'l';
+                    pageWidth = 270;
+                    pageHeight = 190;
+                }
+
+                const doc = new jsPDF({ orientation, unit: 'mm', format });
+                const margin = 15;
+                let y = margin + 15;
+
+                // Title
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.setTextColor(15, 23, 42); 
+                doc.text(appSettings.title, margin, y);
+                
+                // Subtitle
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(100, 116, 139); 
+                doc.text(appSettings.subtitle, margin, y);
+                
+                y += 15;
+
+                const sortedExams = [...exams].sort((a, b) => new Date(`${a.date}T${a.timeStart}`) - new Date(`${b.date}T${b.timeStart}`));
+                const hexToRgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+
+                sortedExams.forEach(exam => {
+                    const theme = themes[exam.color] || themes.blue;
+                    const cardWidth = pageWidth - (margin * 2);
+                    
+                    doc.setFontSize(12);
+                    const isMobile = currentExportSize === 'mobile';
+                    const nameColWidth = isMobile ? cardWidth - 15 : cardWidth * 0.4 - 15;
+                    const splitTitle = doc.splitTextToSize(exam.name, nameColWidth);
+                    
+                    const baseHeight = isMobile ? 55 : 28;
+                    const extraTextHeight = Math.max(0, (splitTitle.length - 1) * 5);
+                    const cardHeight = baseHeight + extraTextHeight;
+
+                    if (y + cardHeight > pageHeight - margin) {
+                        doc.addPage();
+                        y = margin + 10;
+                    }
+
+                    // Card Bg & Border
+                    doc.setDrawColor(226, 232, 240); 
+                    doc.setFillColor(255, 255, 255);
+                    doc.roundedRect(margin, y, cardWidth, cardHeight, 3, 3, 'FD');
+
+                    // Left Line
+                    const accRGB = hexToRgb(theme.hex);
+                    doc.setFillColor(accRGB[0], accRGB[1], accRGB[2]);
+                    doc.roundedRect(margin, y, 2, cardHeight, 1, 1, 'F');
+
+                    let currentY = y + 8;
+
+                    // Pill
+                    const bgRGB = hexToRgb(theme.bg);
+                    const borderRGB = hexToRgb(theme.border);
+                    doc.setFillColor(bgRGB[0], bgRGB[1], bgRGB[2]);
+                    doc.setDrawColor(borderRGB[0], borderRGB[1], borderRGB[2]);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(8);
+                    const codeWidth = doc.getTextWidth(exam.code.toUpperCase()) + 6;
+                    doc.roundedRect(margin + 6, currentY - 4, codeWidth, 6, 1, 1, 'FD');
+                    
+                    const textRGB = hexToRgb(theme.text);
+                    doc.setTextColor(textRGB[0], textRGB[1], textRGB[2]);
+                    doc.text(exam.code.toUpperCase(), margin + 9, currentY + 0.5);
+
+                    // Name
+                    currentY += 8;
+                    doc.setFontSize(12);
+                    doc.setTextColor(15, 23, 42);
+                    doc.text(splitTitle, margin + 6, currentY);
+                    
+                    currentY += extraTextHeight;
+
+                    if (isMobile) {
+                        currentY += 6;
+                        doc.setDrawColor(241, 245, 249);
+                        doc.line(margin + 6, currentY, margin + cardWidth - 6, currentY);
+                        currentY += 6;
+
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(8);
+                        doc.setTextColor(148, 163, 184);
+                        doc.text("DATE:", margin + 6, currentY);
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(formatDate(exam.date), margin + 20, currentY);
+
+                        currentY += 8;
+
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(8);
+                        doc.setTextColor(148, 163, 184);
+                        doc.text("TIME:", margin + 6, currentY);
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(`${formatTime(exam.timeStart)} - ${formatTime(exam.timeEnd)}`, margin + 20, currentY);
+
+                    } else {
+                        const splitX = margin + (cardWidth * 0.45);
+                        doc.setDrawColor(241, 245, 249);
+                        doc.line(splitX, y + 4, splitX, y + cardHeight - 4);
+
+                        const rightStart = splitX + 8;
+                        const col2Start = rightStart + (cardWidth * 0.25);
+
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(7);
+                        doc.setTextColor(148, 163, 184);
+                        doc.text("DATE", rightStart, y + 10);
+                        doc.text("TIME", col2Start, y + 10);
+
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(10);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(formatDate(exam.date), rightStart, y + 16);
+                        doc.text(`${formatTime(exam.timeStart)} - ${formatTime(exam.timeEnd)}`, col2Start, y + 16);
+                    }
+
+                    y += cardHeight + 5;
+                });
+
+                // Footer
+                if (y > pageHeight - 20) { doc.addPage(); y = margin + 10; }
+                y += 10;
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(8);
+                doc.setTextColor(148, 163, 184);
+                doc.text(appSettings.university.toUpperCase(), pageWidth / 2, y, { align: "center" });
+                y += 5;
+                doc.setFont("helvetica", "normal");
+                doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, y, { align: "center" });
+
+                doc.save(`${appSettings.title.replace(/\s+/g, '_')}_${currentExportSize}.pdf`);
+                showToast("PDF Downloaded successfully!");
+                closeExportModal();
+
+            } catch (error) { 
+                console.error(error); 
+                showToast("Failed to generate PDF", true); 
+            }
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-message').textContent = message;
+            
+            if(isError) {
+                icon.className = "ph-fill ph-warning-circle";
+                icon.style.color = "#f87171";
+            } else {
+                icon.className = "ph-fill ph-check-circle";
+                icon.style.color = "#4ade80";
+            }
+
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // --- BOOTSTRAP APP ---
+        initApp();
+    </script>
+</body>
+</html>

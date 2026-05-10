@@ -53,7 +53,6 @@
             inset: 0;
             z-index: 9999;
             background-color: #f8fafc;
-            /* Super Modern Mesh Gradient Background */
             background-image: 
                 radial-gradient(at 10% 10%, rgba(147, 51, 234, 0.15) 0px, transparent 50%),
                 radial-gradient(at 90% 10%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
@@ -109,7 +108,7 @@
             border-radius: 24px;
             padding: 40px;
             text-align: left;
-            display: none; /* Hidden initially */
+            display: none; 
             animation: slideUp 0.5s var(--spring) forwards;
         }
 
@@ -139,7 +138,7 @@
 
         /* ==================== MAIN APP LAYOUT ==================== */
         #app-view {
-            display: none; /* Hidden until setup is complete */
+            display: none; 
             padding-bottom: 80px;
             min-height: 100vh;
             animation: fadeIn 0.6s ease forwards;
@@ -173,20 +172,29 @@
         .form-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.5px; }
         .form-input { width: 100%; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 15px; color: var(--text-dark); transition: var(--transition); }
         .form-input:focus { background: var(--surface); border-color: #3b82f6; outline: 3px solid rgba(59, 130, 246, 0.15); }
-        textarea.form-input { height: 120px; resize: none; }
+        textarea.form-input { height: 100px; resize: none; }
 
-        /* ==================== CARDS ==================== */
+        /* ==================== CARDS & DROPDOWN MENU ==================== */
         .schedule-list { display: flex; flex-direction: column; gap: 16px; }
-        .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; position: relative; display: flex; flex-direction: column; gap: 16px; overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition); animation: slideUp 0.5s var(--spring) forwards; opacity: 0; }
+        .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; position: relative; display: flex; flex-direction: column; gap: 16px; overflow: visible; box-shadow: var(--shadow-sm); transition: var(--transition); animation: slideUp 0.5s var(--spring) forwards; opacity: 0; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .exam-card.removing { animation: fadeOut 0.3s ease forwards; }
         @keyframes fadeOut { to { opacity: 0; transform: scale(0.95); height: 0; padding: 0; margin: 0; border: none; } }
         
-        .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
-        .card-delete { position: absolute; top: 16px; right: 16px; color: #cbd5e1; background: none; border: none; padding: 8px; border-radius: 50%; font-size: 16px; transition: var(--transition); opacity: 1; z-index: 10; width: 35px; }
-        .card-delete:hover { color: #ef4444; background: #fef2f2; }
+        .card-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; border-radius: var(--radius-xl) 0 0 var(--radius-xl); }
         
-        .card-left { display: flex; flex-direction: column; justify-content: center; }
+        .card-menu-container { position: absolute; top: 12px; right: 12px; z-index: 10; }
+        .btn-menu { color: #94a3b8; background: none; border: none; padding: 6px; border-radius: 50%; font-size: 24px; transition: var(--transition); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-menu:hover { color: #0f172a; background: #f1f5f9; }
+        
+        .dropdown-menu { position: absolute; top: 100%; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); min-width: 140px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: var(--transition); display: flex; flex-direction: column; overflow: hidden; z-index: 20; }
+        .dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-item { padding: 12px 16px; text-align: left; background: none; border: none; width: 100%; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text-dark); display: flex; align-items: center; gap: 8px; transition: background 0.2s; }
+        .dropdown-item:hover { background: #f8fafc; }
+        .dropdown-item.text-danger { color: #ef4444; }
+        .dropdown-item.text-danger:hover { background: #fef2f2; }
+
+        .card-left { display: flex; flex-direction: column; justify-content: center; padding-right: 30px; }
         .card-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 6px; }
         .course-code { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 1px solid; text-transform: uppercase; width: fit-content; }
         .course-name { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-top: 10px; line-height: 1.3; }
@@ -195,7 +203,7 @@
         .info-block { display: flex; gap: 12px; align-items: flex-start; flex: 1; }
         .info-icon { background: #f8fafc; border: 1px solid var(--border); width: 32px; height: 32px; border-radius: var(--radius-md); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
         .info-text strong { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 2px; }
-        .info-text span { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+        .info-text span { font-size: 13px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 4px; }
 
         .empty-state { display: none; flex-direction: column; align-items: center; text-align: center; padding: 60px 20px; }
         .empty-icon { font-size: 40px; color: var(--text-light); background: #f1f5f9; padding: 24px; border-radius: 50%; margin-bottom: 16px; width: 100px; }
@@ -226,12 +234,23 @@
         .modal-actions .btn { flex: 1; }
 
         /* ==================== ANIMATED TABS ==================== */
-        .tabs { position: relative; display: flex; background: #f1f5f9; padding: 4px; border-radius: var(--radius-md); width: 100%; max-width: 250px; z-index: 1; }
+        .tabs { position: relative; display: flex; background: #f1f5f9; padding: 4px; border-radius: var(--radius-md); width: 100%; z-index: 1; }
         .tab-btn { flex: 1; position: relative; z-index: 2; padding: 6px 12px; font-size: 13px; font-weight: 600; border-radius: 6px; color: var(--text-muted); transition: color 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; }
         .tab-btn.active { color: var(--text-dark); }
-        .tab-indicator { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: var(--surface); border-radius: 6px; box-shadow: var(--shadow-sm); transition: transform 0.4s var(--spring); z-index: 1; }
-        .tabs[data-active="1"] .tab-indicator { transform: translateX(0); }
-        .tabs[data-active="2"] .tab-indicator { transform: translateX(100%); }
+        
+        /* 2 Tabs (Settings) */
+        #settingsTabsContainer { max-width: 250px; }
+        #settingsTabsContainer .tab-indicator { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background: var(--surface); border-radius: 6px; box-shadow: var(--shadow-sm); transition: transform 0.4s var(--spring); z-index: 1; }
+        #settingsTabsContainer[data-active="1"] .tab-indicator { transform: translateX(0); }
+        #settingsTabsContainer[data-active="2"] .tab-indicator { transform: translateX(100%); }
+        
+        /* 3 Tabs (Add Modal) */
+        #addTabsContainer { max-width: 320px; }
+        #addTabsContainer .tab-indicator { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(33.333% - 4px); background: var(--surface); border-radius: 6px; box-shadow: var(--shadow-sm); transition: transform 0.4s var(--spring); z-index: 1; }
+        #addTabsContainer[data-active="1"] .tab-indicator { transform: translateX(0); }
+        #addTabsContainer[data-active="2"] .tab-indicator { transform: translateX(100%); }
+        #addTabsContainer[data-active="3"] .tab-indicator { transform: translateX(200%); }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: tabFadeSlide 0.4s var(--spring) forwards; }
         @keyframes tabFadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -266,7 +285,7 @@
         .export-option-info p { font-size: 11px; color: var(--text-muted); }
 
         /* Loader & Toast */
-        .loader-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.9); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .loader-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.9); z-index: 20; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 24px 24px 0 0;}
         .loader-overlay.active { display: flex; }
         .spinner { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin-bottom: 12px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -287,14 +306,12 @@
             .exam-card { flex-direction: row; align-items: center; padding: 24px; }
             .card-left { width: 40%; padding-right: 20px; }
             .card-right { width: 60%; flex-direction: row; border-top: none; border-left: 1px solid var(--border); padding-top: 0; padding-left: 20px; }
-            .card-delete { opacity: 0; }
-            .exam-card:hover .card-delete { opacity: 1; }
             
-            /* Desktop Modal Animation */
             .modal-wrapper { align-items: center; }
             .modal-content { border-radius: 16px; transform: scale(0.95) translateY(10px); opacity: 0; transition: transform 0.4s var(--spring), opacity 0.4s ease; }
             .modal-wrapper.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
             .modal-drag { display: none; }
+            .loader-overlay { border-radius: 16px; }
         }
         @media (max-width: 639px) {
             .header-actions .btn-primary { display: none; }
@@ -302,7 +319,6 @@
             .desktop-only { display: none; }
         }
 
-        /* VIRTUAL RENDER CONTAINER (FOR PERFECT IMAGE EXPORT) */
         #virtual-export-container {
             position: fixed;
             top: -9999px;
@@ -441,37 +457,14 @@
                         </div>
                     </form>
 
-                    <!-- <div id="aboutSection" class="tab-content">
+                    <div id="aboutSection" class="tab-content">
                         <div style="text-align: center; padding: 20px 0;">
                             <div style="width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
                                 <i class="ph-bold ph-calendar-check"></i>
                             </div>
                             <h3 style="font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Smart Schedule App</h3>
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Version 3.0</p>
-                            
-                            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left;">
-                                <p style="font-size: 13px; color: var(--text-dark); line-height: 1.6; margin-bottom: 12px;">
-                                    A beautifully designed, fully responsive application to manage and export your exam schedules.
-                                </p>
-                                <ul style="font-size: 13px; color: var(--text-muted); padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
-                                    <li>Smart AI parsing via Puter.js</li>
-                                    <li>Selectable-text PDF generation</li>
-                                    <li>Pixel-perfect responsive image exports</li>
-                                    <li>Fluid animations & interactions</li>
-                                </ul>
-                                <br>
-                                <h6>This App Made By MMS</h4>
-                                    
-                            </div>
-                        </div> -->
-                        <div id="aboutSection" class="tab-content">
-    <div style="text-align: center; padding: 20px 0;">
-        <div style="width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">
-            <i class="ph-bold ph-calendar-check"></i>
-        </div>
-        <h3 style="font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Smart Schedule App</h3>
-        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Version 3.0</p>
-                                    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
+                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Version 3.0 (Stable AI Edition)</p>
+                            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center;">
                                 <p style="font-size: 13px; color: var(--text-dark); line-height: 1.6; margin-bottom: 12px;">
                                     A beautifully designed, fully responsive application to manage and export your exam schedules.
                                 </p>
@@ -483,20 +476,17 @@
                                 </ul>
                                 <br>
                                 <div style="justify-items: center;">
-<a href="https://mmssb.github.io" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 50px; margin-bottom: 24px; text-decoration: none; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-<!-- <a href="https://github.com/MMSSB" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 50px; margin-bottom: 24px; text-decoration: none; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"> -->
-            <span style="font-size: 12px; font-weight: 600; color: #64748b;">Made by</span>
-            <span style="font-size: 13px; font-weight: 800; color: #9333ea;">MMS</span>
-            <i class="ph-fill ph-sparkle" style="color: #9333ea; font-size: 14px;"></i>
-        </a>
-        </div>
-        <a href="updates.html" class="btn btn-outline" style="width: 100%; justify-content: center;">View Full Changelog</a>
-    </div>
-</div>
+                                    <a href="https://mmssb.github.io" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.2); border-radius: 50px; margin-bottom: 24px; text-decoration: none; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                        <span style="font-size: 12px; font-weight: 600; color: #64748b;">Made by</span>
+                                        <span style="font-size: 13px; font-weight: 800; color: #9333ea;">MMS</span>
+                                        <i class="ph-fill ph-sparkle" style="color: #9333ea; font-size: 14px;"></i>
+                                    </a>
+                                </div>
+                                <a href="updates.html" class="btn btn-outline" style="width: 100%; justify-content: center;">View Full Changelog</a>
+                            </div>
+                        </div>
                     </div>
-                    
                 </div>
-                
             </div>
         </div>
 
@@ -511,14 +501,18 @@
                         <button id="tabBtnAI" class="tab-btn" onclick="switchAddTab('ai')">
                             <i class="ri-magic-line" style="color: #9333ea;"></i> AI
                         </button>
+                        <button id="tabBtnImport" class="tab-btn" onclick="switchAddTab('import')">
+                            <i class="ph-bold ph-upload-simple"></i> Import
+                        </button>
                     </div>
                     <button class="modal-close" onclick="closeAddModal()"><i class="ph ph-x"></i></button>
                 </div>
                 
                 <div class="modal-body">
+                    
                     <div id="aiLoader" class="loader-overlay">
                         <div class="spinner"></div>
-                        <p style="font-size: 13px; font-weight: 600; color: #0f172a;">Extracting Exams...</p>
+                        <p id="loaderText" style="font-size: 14px; font-weight: 600; color: #0f172a;">Extracting Exams...</p>
                     </div>
 
                     <form id="formManual" class="tab-content active" onsubmit="handleManualSubmit(event)">
@@ -552,21 +546,40 @@
                         </div>
                         <div class="modal-actions">
                             <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save Exam</button>
+                            <button type="submit" id="formManualSubmitBtn" class="btn btn-primary">Save Exam</button>
                         </div>
                     </form>
 
                     <form id="formAI" class="tab-content" onsubmit="handleAISubmit(event)">
                         <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; gap: 10px;">
                             <i class="ri-sparkling-line" style="color: #9333ea; font-size: 18px; margin-top:2px;"></i>
-                            <p style="font-size: 12px; color: #6b21a8; line-height: 1.4;">Paste your raw text (like a syllabus). AI will extract all dates and times automatically.</p>
+                            <div style="font-size: 12px; color: #6b21a8; line-height: 1.4;">
+                                Paste your schedule text below. The AI is highly trained to understand even short snippets like <strong>"inf 406 12 to 2pm 11/6/2026"</strong>.
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <textarea id="aiPrompt" class="form-input" style="height: 160px;" required placeholder="Paste your text here..."></textarea>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+                            <button type="submit" class="btn btn-purple"><i class="ri-magic-line"></i> Extract Schedule</button>
+                        </div>
+                    </form>
+
+                    <form id="formImport" class="tab-content" onsubmit="handleImportSubmit(event)">
+                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; gap: 10px;">
+                            <i class="ph-duotone ph-clock-counter-clockwise" style="color: #3b82f6; font-size: 18px; margin-top:2px;"></i>
+                            <p style="font-size: 12px; color: #1e3a8a; line-height: 1.4;">Restore your schedule from a saved backup file (.ss).</p>
                         </div>
                         <div class="form-group">
-                            <textarea id="aiPrompt" class="form-input" required placeholder="E.g. I have Math 101 on April 12th from 2pm to 4pm..."></textarea>
+                            <label class="form-label">Select Backup File</label>
+                            <input type="file" id="importFile" accept=".ss" class="form-input" required>
                         </div>
                         <div class="modal-actions">
                             <button type="button" class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
-                            <button type="submit" class="btn btn-purple"><i class="ri-magic-line"></i> Extract</button>
+                            <button type="submit" class="btn btn-primary"><i class="ph-bold ph-upload-simple"></i> Restore Backup</button>
                         </div>
                     </form>
                 </div>
@@ -617,8 +630,9 @@
                     </div>
 
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-outline" onclick="exportAsImage()"><i class="ph-bold ph-image"></i> Save Image</button>
-                        <button type="button" class="btn btn-primary" onclick="exportAsPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                        <button type="button" class="btn btn-outline" onclick="exportBackup()"><i class="ph-bold ph-download-simple"></i> Backup (.ss)</button>
+                        <button type="button" class="btn btn-outline" onclick="exportAsImage()"><i class="ph-bold ph-image"></i> Image</button>
+                        <button type="button" class="btn btn-primary" onclick="exportAsPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
                     </div>
                 </div>
             </div>
@@ -644,38 +658,57 @@
         // State Management
         let exams = JSON.parse(localStorage.getItem('exams')) || [];
         let appSettings = JSON.parse(localStorage.getItem('appSettings')) || {
-            initialized: false, // NEW: tracks if they finished the welcome wizard
+            initialized: false,
             title: "My Schedule",
             subtitle: "",
             university: ""
         };
 
         let currentExportSize = 'desktop';
+        let editingExamId = null;
+
+        // Global Event Listeners to close dropdown menus
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.card-menu-container')) {
+                document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
+                    menu.classList.remove('active');
+                });
+            }
+        });
 
         // Helpers
         const formatDate = (dateString) => {
+            if (!dateString) return '';
             const date = new Date(dateString + 'T00:00:00'); 
             return date.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
         };
         const formatTime = (timeString) => {
+            if (!timeString) return '';
             let [hours, minutes] = timeString.split(':');
             const ampm = hours >= 12 ? 'PM' : 'AM';
             hours = hours % 12 || 12; 
             return `${hours}:${minutes} ${ampm}`;
+        };
+        
+        const getTimeIcon = (timeString) => {
+            if (!timeString) return '';
+            const hour = parseInt(timeString.split(':')[0]);
+            if (hour >= 6 && hour < 18) {
+                return `<i class="ph-fill ph-sun" style="color: #f59e0b; font-size: 16px;"></i>`;
+            } else {
+                return `<i class="ph-fill ph-moon" style="color: #6366f1; font-size: 16px;"></i>`;
+            }
         };
 
         // --- INITIALIZATION ROUTING ---
         function initApp() {
             document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             
-            // Check if user has already completed setup
             if (appSettings.initialized) {
-                // Skip landing page, go straight to app
                 document.getElementById('landing-view').style.display = 'none';
                 document.getElementById('app-view').style.display = 'block';
                 loadMainAppFeatures();
             } else {
-                // Show Landing Page
                 document.getElementById('landing-view').classList.remove('hidden');
             }
         }
@@ -693,7 +726,6 @@
             appSettings.subtitle = document.getElementById('wizardSubtitle').value.trim();
             appSettings.initialized = true;
 
-            // Save and transition
             localStorage.setItem('appSettings', JSON.stringify(appSettings));
             
             const landing = document.getElementById('landing-view');
@@ -709,7 +741,6 @@
 
         // --- MAIN APP LOGIC ---
         function loadMainAppFeatures() {
-            // Color picker setup
             const picker = document.getElementById('colorPicker');
             picker.innerHTML = '';
             Object.keys(themes).forEach((color, index) => {
@@ -774,6 +805,21 @@
             showToast("Settings saved successfully!");
         }
 
+        // Rendering & Menu Actions
+        function toggleMenu(id, event) {
+            event.stopPropagation();
+            const currentMenu = document.getElementById(`menu-${id}`);
+            const isActive = currentMenu.classList.contains('active');
+            
+            document.querySelectorAll('.dropdown-menu.active').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            
+            if (!isActive) {
+                currentMenu.classList.add('active');
+            }
+        }
+
         function renderExams() {
             const list = document.getElementById('schedule-list');
             const emptyState = document.getElementById('empty-state');
@@ -796,9 +842,21 @@
                 
                 card.innerHTML = `
                     <div class="card-accent" style="background-color: ${theme.hex};"></div>
-                    <button onclick="deleteExam('${exam.id}')" class="card-delete">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+                    
+                    <div class="card-menu-container">
+                        <button onclick="toggleMenu('${exam.id}', event)" class="btn-menu">
+                            <i class="ph-bold ph-dots-three-vertical"></i>
+                        </button>
+                        <div id="menu-${exam.id}" class="dropdown-menu">
+                            <button onclick="editExam('${exam.id}')" class="dropdown-item">
+                                <i class="ph-duotone ph-pencil-simple" style="font-size: 16px;"></i> Edit Exam
+                            </button>
+                            <button onclick="deleteExam('${exam.id}')" class="dropdown-item text-danger">
+                                <i class="ph-duotone ph-trash" style="font-size: 16px;"></i> Delete Exam
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="card-left">
                         <span class="card-label">Course</span>
                         <div class="course-code" style="background: ${theme.bg}; color: ${theme.text}; border-color: ${theme.border};">${exam.code}</div>
@@ -816,7 +874,10 @@
                             <div class="info-icon"><i class="ph-duotone ph-clock"></i></div>
                             <div class="info-text">
                                 <strong>Time</strong>
-                                <span>${formatTime(exam.timeStart)} - ${formatTime(exam.timeEnd)}</span>
+                                <span>
+                                    ${getTimeIcon(exam.timeStart)} 
+                                    ${formatTime(exam.timeStart)} - ${formatTime(exam.timeEnd)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -826,6 +887,7 @@
         }
 
         function deleteExam(id) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('active'));
             const card = document.getElementById(`exam-${id}`);
             if (card) {
                 card.classList.add('removing');
@@ -838,19 +900,55 @@
             }
         }
 
-        // Add Modal Logic
+        function editExam(id) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('active'));
+            const exam = exams.find(e => e.id === id);
+            if (!exam) return;
+
+            editingExamId = id;
+            document.getElementById('formManualSubmitBtn').innerHTML = 'Update Exam';
+
+            document.getElementById('courseCode').value = exam.code;
+            document.getElementById('courseName').value = exam.name;
+            document.getElementById('examDate').value = exam.date;
+            document.getElementById('examTimeStart').value = exam.timeStart;
+            document.getElementById('examTimeEnd').value = exam.timeEnd;
+            
+            const colorRadios = document.getElementsByName('themeColor');
+            for(let radio of colorRadios) {
+                if (radio.value === exam.color) {
+                    radio.checked = true;
+                    break;
+                }
+            }
+
+            addModal.classList.add('active');
+            switchAddTab('manual');
+        }
+
+        // Add / Edit / Import Modal Logic
         const addModal = document.getElementById('addModal');
+        
         function openAddModal() { 
+            editingExamId = null;
+            document.getElementById('formManualSubmitBtn').innerHTML = 'Save Exam';
+            document.getElementById('formManual').reset();
+            
             addModal.classList.add('active'); 
             const dateInput = document.getElementById('examDate');
             if(!dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+            
+            document.querySelector('.color-radio').checked = true;
         }
+
         function closeAddModal() { 
             addModal.classList.remove('active'); 
             setTimeout(() => {
                 document.getElementById('formManual').reset();
                 document.getElementById('formAI').reset();
+                document.getElementById('formImport').reset();
                 switchAddTab('manual');
+                editingExamId = null;
             }, 400);
         }
 
@@ -858,104 +956,198 @@
             const container = document.getElementById('addTabsContainer');
             const manual = document.getElementById('formManual');
             const ai = document.getElementById('formAI');
+            const imp = document.getElementById('formImport');
             const btnManual = document.getElementById('tabBtnManual');
             const btnAI = document.getElementById('tabBtnAI');
+            const btnImport = document.getElementById('tabBtnImport');
+
+            [manual, ai, imp].forEach(el => el.classList.remove('active'));
+            [btnManual, btnAI, btnImport].forEach(el => el.classList.remove('active'));
 
             if (tab === 'manual') {
                 container.setAttribute('data-active', '1');
-                manual.classList.add('active'); ai.classList.remove('active');
-                btnManual.classList.add('active'); btnAI.classList.remove('active');
-            } else {
+                manual.classList.add('active');
+                btnManual.classList.add('active');
+            } else if (tab === 'ai') {
                 container.setAttribute('data-active', '2');
-                ai.classList.add('active'); manual.classList.remove('active');
-                btnAI.classList.add('active'); btnManual.classList.remove('active');
+                ai.classList.add('active');
+                btnAI.classList.add('active');
+            } else {
+                container.setAttribute('data-active', '3');
+                imp.classList.add('active');
+                btnImport.classList.add('active');
             }
         }
 
         function handleManualSubmit(e) {
             e.preventDefault();
             const colorOption = document.querySelector('input[name="themeColor"]:checked');
-            const newExam = {
-                id: Date.now().toString(),
-                code: document.getElementById('courseCode').value.trim(),
-                name: document.getElementById('courseName').value.trim(),
-                date: document.getElementById('examDate').value,
-                timeStart: document.getElementById('examTimeStart').value,
-                timeEnd: document.getElementById('examTimeEnd').value,
-                color: colorOption ? colorOption.value : 'blue'
-            };
-            exams.push(newExam);
+            
+            if (editingExamId) {
+                const index = exams.findIndex(ex => ex.id === editingExamId);
+                if(index !== -1) {
+                    exams[index] = {
+                        ...exams[index],
+                        code: document.getElementById('courseCode').value.trim(),
+                        name: document.getElementById('courseName').value.trim(),
+                        date: document.getElementById('examDate').value,
+                        timeStart: document.getElementById('examTimeStart').value,
+                        timeEnd: document.getElementById('examTimeEnd').value,
+                        color: colorOption ? colorOption.value : 'blue'
+                    };
+                    showToast("Exam updated successfully!");
+                }
+            } else {
+                const newExam = {
+                    id: Date.now().toString(),
+                    code: document.getElementById('courseCode').value.trim(),
+                    name: document.getElementById('courseName').value.trim(),
+                    date: document.getElementById('examDate').value,
+                    timeStart: document.getElementById('examTimeStart').value,
+                    timeEnd: document.getElementById('examTimeEnd').value,
+                    color: colorOption ? colorOption.value : 'blue'
+                };
+                exams.push(newExam);
+                showToast("Exam added successfully!");
+            }
+            
             localStorage.setItem('exams', JSON.stringify(exams));
             renderExams();
             closeAddModal();
-            showToast("Exam added successfully!");
         }
 
-        // Puter AI Extraction
+        // ==========================================
+        // --- STABLE AND SIMPLE AI EXTRACTION ---
+        // ==========================================
         async function handleAISubmit(e) {
             e.preventDefault();
             const promptText = document.getElementById('aiPrompt').value.trim();
-            if(!promptText) return;
+
+            if(!promptText) {
+                showToast("Please paste your text first", true);
+                return;
+            }
 
             const loader = document.getElementById('aiLoader');
             loader.classList.add('active');
 
             try {
                 const currentYear = new Date().getFullYear();
-                const systemPrompt = `Extract exams from the following text. The current year is ${currentYear} if not specified.
-        You MUST respond ONLY with a raw JSON array of objects. Do not include any markdown formatting like \`\`\`json. 
-        Each object must have EXACTLY these properties:
-        - code (string, e.g., "MATH 101")
-        - name (string, course name)
-        - date (string, format YYYY-MM-DD)
-        - timeStart (string, format HH:MM in 24hr)
-        - timeEnd (string, format HH:MM in 24hr)
-        - color (string, randomly pick one: "blue", "indigo", "emerald", "orange", "purple", "rose")
-
-        Text to extract from:
-        ${promptText}`;
-
-                const response = await puter.ai.chat(systemPrompt);
                 
+                // Super clear, stable, and rigid prompt instructions
+                const prompt = `Extract exam schedules from the text below. The current year is ${currentYear}.
+                
+                Text to analyze: "${promptText}"
+                
+                Respond ONLY with a raw JSON array of objects. Do not write any other words.
+                Format rules:
+                - code: The course code (if none, make one up like "EXAM")
+                - name: The course name (if none, use the code)
+                - date: Format YYYY-MM-DD (guess the year if missing)
+                - timeStart: Format HH:MM (24-hour time. Default to "12:00" if not found)
+                - timeEnd: Format HH:MM (24-hour time. Default to "14:00" if not found)
+                - color: Pick "blue", "indigo", "emerald", "orange", "purple", or "rose"
+                
+                Example:
+                [
+                  {
+                    "code": "INF 406",
+                    "name": "INF 406",
+                    "date": "2026-11-06",
+                    "timeStart": "12:00",
+                    "timeEnd": "14:00",
+                    "color": "blue"
+                  }
+                ]`;
+
+                const response = await puter.ai.chat(prompt);
+                
+                // Safely grab the text out of whatever Puter returns
                 let rawText = "";
                 if (typeof response === 'string') {
                     rawText = response;
-                } else if (response?.message?.content) {
-                    rawText = response.message.content; 
-                } else if (response?.text) {
-                    rawText = response.text; 
+                } else if (response && response.message && typeof response.message.content === 'string') {
+                    rawText = response.message.content;
+                } else if (response && typeof response.text === 'string') {
+                    rawText = response.text;
                 } else {
-                    rawText = JSON.stringify(response); 
-                }
-                
-                let cleanJsonText = rawText.trim();
-                
-                if (cleanJsonText.startsWith('```json')) {
-                    cleanJsonText = cleanJsonText.replace(/^```json/, '').replace(/```$/, '').trim();
-                } else if (cleanJsonText.startsWith('```')) {
-                    cleanJsonText = cleanJsonText.replace(/^```/, '').replace(/```$/, '').trim();
+                    rawText = JSON.stringify(response);
                 }
 
-                const extractedData = JSON.parse(cleanJsonText);
+                // Force extraction of the JSON array, ignoring any AI chit-chat
+                const match = rawText.match(/\[[\s\S]*\]/);
+                if (!match) {
+                    throw new Error("Could not find JSON array in AI response");
+                }
+
+                const extractedData = JSON.parse(match[0]);
 
                 if (Array.isArray(extractedData) && extractedData.length > 0) {
                     extractedData.forEach(ex => { 
                         ex.id = Date.now().toString() + Math.random().toString(36).substr(2, 5); 
+                        
+                        // Fail-safes just in case the AI missed something
+                        ex.code = ex.code || "EXAM";
+                        ex.name = ex.name || ex.code;
+                        ex.date = ex.date || new Date().toISOString().split('T')[0];
+                        ex.timeStart = ex.timeStart || "12:00";
+                        ex.timeEnd = ex.timeEnd || "14:00";
+                        ex.color = ex.color || "blue";
+                        
                         exams.push(ex); 
                     });
                     localStorage.setItem('exams', JSON.stringify(exams));
                     renderExams();
                     closeAddModal();
-                    showToast(`Added ${extractedData.length} exams!`);
+                    showToast(`Successfully added ${extractedData.length} exams!`);
                 } else {
-                    showToast("No exams found.", true);
+                    showToast("No schedule info found in the text.", true);
                 }
             } catch(err) {
-                console.error("AI Extraction Error:", err);
-                showToast("Failed to connect to AI or parse response.", true);
+                console.error("AI Error:", err);
+                showToast("Error processing text. Please check format.", true);
             } finally {
                 loader.classList.remove('active');
             }
+        }
+
+        // --- IMPORT BACKUP ---
+        function handleImportSubmit(e) {
+            e.preventDefault();
+            const impFile = document.getElementById('importFile').files[0];
+            
+            if (!impFile) return;
+            
+            if(!impFile.name.endsWith('.ss')) {
+                showToast("Please upload a valid .ss file", true);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    
+                    if (data.exams && Array.isArray(data.exams)) {
+                        exams = data.exams;
+                        localStorage.setItem('exams', JSON.stringify(exams));
+                    }
+                    if (data.settings) {
+                        appSettings = { ...appSettings, ...data.settings };
+                        appSettings.initialized = true; 
+                        localStorage.setItem('appSettings', JSON.stringify(appSettings));
+                    }
+                    
+                    applySettings();
+                    renderExams();
+                    closeAddModal();
+                    showToast("Schedule restored successfully!");
+                } catch (err) {
+                    console.error("Import parsing error:", err);
+                    showToast("Invalid or corrupted backup file!", true);
+                }
+            };
+            reader.readAsText(impFile);
         }
 
         // Export Modal & UI State
@@ -970,6 +1162,32 @@
             
             const schematic = document.getElementById('schematic-preview');
             schematic.className = `schematic-box ${size}`;
+        }
+
+        // --- EXPORT BACKUP (.SS) ---
+        function exportBackup() {
+            try {
+                const backupData = {
+                    version: "3.0",
+                    settings: appSettings,
+                    exams: exams
+                };
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                const cleanTitle = appSettings.title.replace(/\s+/g, '_') || "Schedule";
+                a.download = `${cleanTitle}_backup.ss`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                showToast("Backup exported (.ss)!");
+                closeExportModal();
+            } catch(err) {
+                console.error("Backup export error:", err);
+                showToast("Failed to create backup", true);
+            }
         }
 
         // --- IMAGE EXPORT ---
